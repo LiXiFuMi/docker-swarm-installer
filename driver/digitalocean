@@ -3,13 +3,50 @@
 # author: Julen Lizaso
 # email: lixifumi@gmail.com
 
-function driver-header {
+function driver-install {
   echo ""
   echo "DigitalOcean selected"
-  echo ""
-}
 
-function driver-menu {
+  echo ""
   echo -n "access-token: "
   read ACCESSTOKEN
+  echo -n "region: "
+  read REGION
+
+  echo ""
+  echo "-> Key-value host"
+  echo -n "name: "
+  read KVNAME
+  echo -n "size: "
+  read KVSIZE
+
+  echo ""
+  echo "-> Swarm-master host"
+  echo -n "name: "
+  read MASTERNAME
+  echo -n "size: "
+  read MASTERSIZE
+
+  echo ""
+  echo "-> Swarm-node hosts"
+  echo -n "name prefix: "
+  read NODENAME
+  echo -n "size: "
+  read NODESIZE
+  echo -n "number of node hosts: "
+  read NODENUMBER
+
+  echo ""
+  echo -n "Proceed [y|n]: "
+  read PROCEED
+
+  case ${PROCEED} in
+    y|Y)
+      echo "installing"
+      ;;
+    n|N|*)
+      echo "Exiting..."
+      exit 0
+      ;;
+  esac
 }

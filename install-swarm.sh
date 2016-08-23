@@ -31,7 +31,7 @@ function select-driver {
     exit 1
   fi
   source ${DRIVERDIR}/${DRIVER}
-  driver-header
+  driver-install
 }
 
 mkdir -p log
