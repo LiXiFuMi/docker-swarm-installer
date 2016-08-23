@@ -5,6 +5,7 @@
 
 VERSION="0.0.1"
 LOGDIR="log"
+LOGFILE=${LOGDIR}/log.log
 DRIVERDIR="driver"
 
 function header {
