@@ -3,8 +3,9 @@
 # author: Julen Lizaso
 # email: lixifumi@gmail.com
 
-VERSION="0.0.1"
+VERSION="0.1.0"
 LOGDIR="log"
+LOGFILE=${LOGDIR}/log.log
 DRIVERDIR="driver"
 
 function header {
@@ -31,7 +32,7 @@ function select-driver {
     exit 1
   fi
   source ${DRIVERDIR}/${DRIVER}
-  driver-header
+  driver-install
 }
 
 mkdir -p log

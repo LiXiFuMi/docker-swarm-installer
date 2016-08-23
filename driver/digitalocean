@@ -3,13 +3,125 @@
 # author: Julen Lizaso
 # email: lixifumi@gmail.com
 
-function driver-header {
+function driver-install {
   echo ""
   echo "DigitalOcean selected"
-  echo ""
-}
 
-function driver-menu {
+  echo ""
   echo -n "access-token: "
   read ACCESSTOKEN
+  echo -n "region: "
+  read REGION
+
+  echo ""
+  echo "-> Key-value host"
+  echo -n "name: "
+  read KVNAME
+  echo -n "size: "
+  read KVSIZE
+
+  echo ""
+  echo "-> Swarm-master host"
+  echo -n "name: "
+  read MASTERNAME
+  echo -n "size: "
+  read MASTERSIZE
+
+  echo ""
+  echo "-> Swarm-node hosts"
+  echo -n "name prefix: "
+  read NODENAME
+  echo -n "size: "
+  read NODESIZE
+  echo -n "number of node hosts: "
+  read NODENUMBER
+
+  echo ""
+  echo -n "Proceed [y|n]: "
+  read PROCEED
+
+  case ${PROCEED} in
+    y|Y)
+      echo "Installing"
+
+      echo "Creating kv host"
+      docker-machine create \
+      --driver=digitalocean \
+      --digitalocean-access-token=${ACCESSTOKEN} \
+      --digitalocean-size=${KVSIZE} \
+      --digitalocean-region=${REGION} \
+      --digitalocean-private-networking=true \
+      --digitalocean-image=ubuntu-16-04-x64 \
+      ${KVNAME} >> ${LOGFILE} 2>&1
+
+      if [ $? -ne 0 ]; then
+        echo "Error creating kv host"
+        exit 1
+      fi
+
+      docker $(docker-machine config ${KVNAME}) run -d \
+      --net=host progrium/consul --server -bootstrap-expect 1 >> ${LOGFILE} 2>&1
+
+      if [ $? -ne 0 ]; then
+        echo "Error creating kv host"
+        exit 1
+      fi
+
+      KVIP=$(docker-machine ip ${KVNAME})
+
+      echo "Finished creating kv host"
+
+      echo "Creating swarm master host"
+      docker-machine create \
+      --driver=digitalocean \
+      --digitalocean-access-token=${ACCESSTOKEN} \
+      --digitalocean-size=${MASTERSIZE} \
+      --digitalocean-region=${REGION} \
+      --digitalocean-private-networking=true \
+      --digitalocean-image=ubuntu-16-04-x64 \
+      --swarm \
+      --swarm-master \
+      --swarm-discovery consul://${KVIP}:8500 \
+      --engine-opt "cluster-store consul://${KVIP}:8500" \
+      --engine-opt "cluster-advertise eth1:2376" \
+      ${MASTERNAME} >> ${LOGFILE} 2>&1
+
+      if [ $? -ne 0 ]; then
+        echo "Error creating swarm master host"
+        exit 1
+      fi
+
+      echo "Finished creating swarm master host"
+
+      echo "Creating swarm node hosts: ${NODENUMBER}"
+      for node in `seq 1 ${NODENUMBER}`; do
+        echo "Creating swarm node ${node}/${NODENUMBER}"
+        docker-machine create \
+        --driver=digitalocean \
+        --digitalocean-access-token=${ACCESSTOKEN} \
+        --digitalocean-size=${NODESIZE} \
+        --digitalocean-region=${REGION} \
+        --digitalocean-private-networking=true \
+        --digitalocean-image=ubuntu-16-04-x64 \
+        --swarm \
+        --swarm-discovery consul://${KVIP}:8500 \
+        --engine-opt "cluster-store consul://${KVIP}:8500" \
+        --engine-opt "cluster-advertise eth1:2376" \
+        ${NODENAME}${node} >> ${LOGFILE} 2>&1
+
+        if [ $? -ne 0 ]; then
+          echo "Error creating swarm node ${node}/${NODENUMBER}"
+          exit 1
+        fi
+
+        echo "Finished creating swarm node ${node}/${NODENUMBER}"
+
+      done
+      echo "Finished creating swarm node hosts: ${NODENUMBER}"
+      ;;
+    n|N|*)
+      echo "Exiting..."
+      exit 0
+      ;;
+  esac
 }
