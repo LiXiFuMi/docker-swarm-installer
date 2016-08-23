@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# author: Julen Lizaso
+# email: lixifumi@gmail.com
+
+function driver-header {
+  echo ""
+  echo "DigitalOcean selected"
+  echo ""
+}
+
+function driver-menu {
+  echo -n "access-token: "
+  read ACCESSTOKEN
+}
