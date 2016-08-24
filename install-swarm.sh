@@ -3,7 +3,7 @@
 # author: Julen Lizaso
 # email: lixifumi@gmail.com
 
-VERSION="0.0.1"
+VERSION="0.1.1"
 LOGDIR="log"
 LOGFILE=${LOGDIR}/log.log
 DRIVERDIR="driver"
