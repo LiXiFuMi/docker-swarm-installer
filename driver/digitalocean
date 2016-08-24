@@ -37,6 +37,17 @@ function driver-install {
   read NODENUMBER
 
   echo ""
+  echo "-> Swarm network"
+  echo -n "create overlay network in your swarm cluster? [y|n] "
+  read NETWORK
+  case ${NETWORK} in
+    y|Y)
+      echo -n "network name: "
+      read NETWORKNAME
+      ;;
+  esac
+
+  echo ""
   echo -n "Proceed [y|n]: "
   read PROCEED
 
@@ -118,6 +129,25 @@ function driver-install {
 
       done
       echo "Finished creating swarm node hosts: ${NODENUMBER}"
+
+      if [ ! -z ${NETWORKNAME} ]; then
+        echo "Creating swarm network"
+        eval $(docker-machine env ${MASTERNAME})
+        docker network create ${NETWORKNAME}
+
+        if [ $? -ne 0 ]; then
+          echo "Error creating swarm network"
+          exit 1
+        fi
+        echo "Finished creating swarm network"
+      fi
+
+      echo ""
+      echo "DOCKER SWARM CREATED SUCCESSFULLY"
+      echo "Type next command to start using your new docker swarm:"
+      echo "eval \$(docker-machine env --swarm ${MASTERNAME})"
+      echo ""
+      echo "Goodbye"
       ;;
     n|N|*)
       echo "Exiting..."
